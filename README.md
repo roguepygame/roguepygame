@@ -5,7 +5,7 @@
 ![Commits per week](https://img.shields.io/github/commit-activity/w/roguepygame/roguepygame/main)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-An open source rouge-like video game built using Python and Pygame. 
+An open source rouge-like game built using Python and Pygame.  
 
 # Features
 
