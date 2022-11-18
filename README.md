@@ -8,9 +8,9 @@
 
 An open source rouge-like game built using Python and Pygame.  
 
-# Features
+## Features
 
-# Installation
+## Installation
 
-# Contributing
+## Contributing
 
