@@ -6,7 +6,7 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 ![Project License](https://img.shields.io/github/license/roguepygame/roguepygame)
 
-An open source rogue-like game built using Python and Pygame.  
+An open source roguelike game built using Python and Pygame.  
 
 ## Features
 
