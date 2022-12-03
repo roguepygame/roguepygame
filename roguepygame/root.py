@@ -1,4 +1,4 @@
-from typing import Optional, Type
+from typing import Optional, Type, Any
 
 import pygame
 import constants as const
@@ -12,6 +12,9 @@ class Scene:
     """
     def __init__(self, **kwargs):
         self.program: game.Game = const.program
+        self.state: dict[str, Any] = {
+            'mouse_pos': (-1000, -1000)
+        }
 
     def start(self) -> None:
         """
@@ -60,6 +63,13 @@ class Scene:
         """
         pass
 
+    def update_state(self):
+        """
+        Method that updates the state of the program
+        :return:
+        """
+        self.state['mouse_pos'] = pygame.mouse.get_pos()
+
 
 class SceneManager:
     """
@@ -106,6 +116,7 @@ class ObjectManager:
         :param events: list of pygame events
         :return: None
         """
+        self.check_clickable(events)
         for obj in self.objects:
             if callable(getattr(obj, "events", None)):
                 obj.events(events)
@@ -151,6 +162,23 @@ class ObjectManager:
         :return: None
         """
         self.objects.clear()
+
+    def check_clickable(self, events: list[pygame.event.Event]) -> None:
+        """
+        Method that checks if you clicked on any clickable object
+        :param events: list of events
+        :return: None
+        """
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_position = self.program.get_scene().state['mouse_pos']
+                for obj in self.objects:
+                    if isinstance(obj, ClickableObject):
+                        if obj.rect.collidepoint(mouse_position):
+                            if event.button == 1:
+                                obj.click_function()
+                            if event.button == 3:
+                                obj.click_function_right()
 
 
 class GameObject:
@@ -203,7 +231,7 @@ class DrawableObject(GameObject):
     Requires image and rect attributes
     """
 
-    def __init__(self, image: pygame.Surface, rect: pygame.Rect):
+    def __init__(self, image: pygame.Surface = None, rect: pygame.Rect = None):
         super(DrawableObject, self).__init__()
         self.image = image
         self.rect = rect
@@ -215,3 +243,26 @@ class DrawableObject(GameObject):
         :return: None
         """
         screen.blit(self.image, self.rect)
+
+
+class ClickableObject(DrawableObject):
+    """
+    Drawable object that can be clicked
+    Must implement click_function()
+    """
+    def __init__(self):
+        super(ClickableObject, self).__init__()
+
+    def click_function(self):
+        """
+        Function that gets called when the object is clicked with the left mouse button
+        :return: None
+        """
+        raise NotImplementedError(f"{self.__class__.__name__} ClickableObject must implement click_function method!")
+
+    def click_function_right(self):
+        """
+        Function that gets called when the object is clicked with the right mouse button
+        :return: None
+        """
+        pass

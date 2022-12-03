@@ -30,6 +30,7 @@ class Game:  # TODO Rename this to the game name later
         """
         while True:
             scene = self.get_scene()
+            scene.update_state()
             scene.events(pygame.event.get())
             scene.update()
             scene.render(self.screen)
