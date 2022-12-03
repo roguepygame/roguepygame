@@ -1,6 +1,10 @@
-program = None  # Game class
+from typing import TYPE_CHECKING, Optional
+if TYPE_CHECKING:
+    from game import Game
 
-WIDTH = 800
-HEIGHT = 600
-SCREEN_SIZE = (WIDTH, HEIGHT)
-FPS = 60
+program: Optional[Game] = None  # Game class
+
+WIDTH: int = 800
+HEIGHT: int = 600
+SCREEN_SIZE: tuple[int, int] = (WIDTH, HEIGHT)
+FPS: int = 60

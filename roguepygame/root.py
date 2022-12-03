@@ -1,37 +1,85 @@
+from typing import Optional, Type
+
 import pygame
 import constants as const
+import game
 
 
 class Scene:
+    """
+    Class used to represent the game scene
+    it is responsible for processing the events, updating the game state, and rendering the game
+    """
     def __init__(self, **kwargs):
-        self.program = const.program
+        self.program: game.Game = const.program
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Method used once after the Scene has been initialized
+        :return: None
+        """
         pass
 
-    def events(self, events):
+    def events(self, events: list[pygame.event.Event]) -> None:
+        """
+        Method used to process the events returned by pygame.event.get()
+        Gets called at the start of the game loop.
+        Default implementation checks for QUIT event and calls events for objects
+        :param events: pygame events
+        :return: None
+        """
         for event in events:
             if event.type == pygame.QUIT:
                 self.program.quit()
         self.program.get_object_manager().object_events(events)
 
-    def update(self):
-        raise NotImplementedError
+    def update(self) -> None:
+        """
+        Method used to update the game.
+        Gets called after Scene.events() every iteration of game loop.
+        Every Scene must implement it.
+        :return: None
+        """
+        raise NotImplementedError(f"{self.__class__.__name__} Scene must implement update method!")
 
-    def render(self, screen):
-        raise NotImplementedError
+    def render(self, screen: pygame.Surface) -> None:
+        """
+        Method used to render the game.
+        Method gets the game window as the argument.
+        Gets called after Scene.update() every iteration of game loop.
+        Every Scene must implement it
+        :param screen: Game window
+        :return: None
+        """
+        raise NotImplementedError(f"{self.__class__.__name__} Scene must implement render method!")
 
-    def end(self):
+    def end(self) -> None:
+        """
+        Method called before swapping to another scene.
+        :return: None
+        """
         pass
 
 
 class SceneManager:
+    """
+    Class used to manage the scenes.
+    It gives the ability to swap between the scenes.
+    Also contains the ObjectManager for the game.
+    This object shouldn't be initialised, but rather called from the Game class.
+    """
     def __init__(self):
-        self.program = const.program
-        self.scene = None
-        self.object_manager = ObjectManager()
+        self.program: game.Game = const.program
+        self.scene: Optional[Scene] = None
+        self.object_manager: ObjectManager = ObjectManager()
 
-    def go_to(self, scene, **kwargs):
+    def go_to(self, scene: Type[Scene], **kwargs) -> None:
+        """
+        Method you should call when you want to go to another scene
+        :param scene: reference to the scene you want to go to
+        :param kwargs: arguments you want to pass to the new scene
+        :return: None
+        """
         if self.scene is not None:
             self.scene.end()
             self.object_manager.clear_objects()
@@ -41,65 +89,129 @@ class SceneManager:
 
 
 class ObjectManager:
+    """
+    Class used to manage the objects.
+    It contains the collection of all the active objects in the scene.
+    It supports creating and destroying the objects.
+    It gives the ability to iterate over all objects and call important methods.
+    You shouldn't create the instance of this object, but rather use the object already created in the Game class.
+    """
     def __init__(self):
-        self.program = const.program
-        self.objects = []
+        self.program: game.Game = const.program
+        self.objects: list[GameObject] = []
 
-    def object_events(self, events):
+    def object_events(self, events: list[pygame.event.Event]) -> None:
+        """
+        Method used to call the events() method of all objects
+        :param events: list of pygame events
+        :return: None
+        """
         for obj in self.objects:
             if callable(getattr(obj, "events", None)):
                 obj.events(events)
 
-    def object_update(self):
+    def object_update(self) -> None:
+        """
+        Method used to call the update() method of all objects
+        :return: None
+        """
         for obj in self.objects:
             if callable(getattr(obj, "update", None)):
                 obj.update()
 
-    def object_render(self, screen):
+    def object_render(self, screen: pygame.Surface) -> None:
+        """
+        Method used to call the render() method of all DrawableObjects
+        :param screen: game window
+        :return: None
+        """
         for obj in self.objects:
             if isinstance(obj, DrawableObject):
                 obj.render(screen)
 
-    def create_object(self, obj, ):
+    def create_object(self, obj: "GameObject") -> None:
+        """
+        Method used to add new object to the list of objects
+        :param obj: GameObject you want to add
+        :return: None
+        """
         self.objects.append(obj)
 
-    def remove_object(self, obj):
+    def remove_object(self, obj: "GameObject") -> None:
+        """
+        Method used to remove object from the list of objects
+        :param obj: GameObject you want to remove
+        :return: None
+        """
         self.objects.remove(obj)
 
-    def clear_objects(self):
+    def clear_objects(self) -> None:
+        """
+        Method used to remove all objects from the list of objects
+        :return: None
+        """
         self.objects.clear()
 
 
 class GameObject:
+    """
+    Class used to represent the basic game object
+    """
     def __init__(self):
-        self.program = const.program
-        self.name = None
-        self.child_objects = {}
+        self.program: game.Game = const.program
+        self.name: Optional[str] = None
+        self.child_objects: dict[str, GameObject] = {}
 
-    def add_child(self, child_obj, child_name=None):
+    def add_child(self, child_obj: "GameObject", child_name: Optional[str] = None) -> None:
+        """
+        Method that creates the child of the GameObject
+        :param child_obj: child object
+        :param child_name: name of the child
+        :return: None
+        """
         if child_name is None:
             child_name = len(self.child_objects)
             while child_name in self.child_objects:
                 child_name += 1
         self.child_objects[str(child_name)] = child_obj
 
-    def create_object(self, name=None):
-        self.name = name
+    def create_object(self, name: Optional[str] = None) -> None:
+        """
+        Method that adds the object and its children to the ObjectManager
+        :param name: name of the object
+        :return: None
+        """
+        if name is not None:
+            self.name = name
         self.program.get_object_manager().create_object(self)
         for child in self.child_objects.values():
             child.create_object()
 
-    def destroy_object(self):
+    def destroy_object(self) -> None:
+        """
+        Method to remove the object from the ObjectManager
+        :return: None
+        """
         for child in self.child_objects.values():
             child.destroy_object()
         self.program.get_object_manager().remove_object(self)
 
 
 class DrawableObject(GameObject):
-    def __init__(self, image, rect):
+    """
+    Class used to represent the object that is drawn on the Scene
+    Requires image and rect attributes
+    """
+
+    def __init__(self, image: pygame.Surface, rect: pygame.Rect):
         super(DrawableObject, self).__init__()
         self.image = image
         self.rect = rect
 
-    def render(self, screen):
+    def render(self, screen: pygame.Surface) -> None:
+        """
+        Method that draws the object to the game window
+        :param screen: game window
+        :return: None
+        """
         screen.blit(self.image, self.rect)
