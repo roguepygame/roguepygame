@@ -26,6 +26,7 @@ class Text(root.DrawableObject):
     def create_surface(self) -> None:
         """
         Creates the Surface object for the text
+
         :return: None
         """
         self.image = self.font.render(self.text, True, self.color)
@@ -33,9 +34,10 @@ class Text(root.DrawableObject):
 
     def update_text(self, new_text: str) -> None:
         """
+        Function that changes the text of the Text object
 
-        :param new_text:
-        :return:
+        :param new_text: New text
+        :return: None
         """
         if new_text != self.text:
             self.text = new_text
@@ -58,6 +60,7 @@ class Button(root.ClickableObject):
     def click_function(self) -> None:
         """
         Function that gets called when the button is pressed
+
         :return: None
         """
         self.do()

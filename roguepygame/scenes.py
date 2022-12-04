@@ -2,6 +2,7 @@ import pygame
 import constants as const
 import root
 import ui
+import objects
 
 
 class MainMenu(root.Scene):
@@ -32,10 +33,16 @@ class GameScene(root.Scene):
     def __init__(self, **kwargs):
         super(GameScene, self).__init__(**kwargs)
         ui.Text('Game', (const.WIDTH // 2, const.HEIGHT // 2), 48)
+        self.timer = root.Timer(1000, self.spawn_unit).create_object()
+        self.counter = ui.Text('', (const.WIDTH // 2, const.HEIGHT // 2 + 50), 48)
 
     def update(self):
+        self.counter.update_text(f'Objects on screen: {len(self.program.get_object_manager().objects)}')
         self.program.get_object_manager().object_update()
 
     def render(self, screen):
         screen.fill("LIGHTGRAY")  # Place for the background
         self.program.get_object_manager().object_render(screen)
+
+    def spawn_unit(self):
+        objects.RandomObject().create_object()

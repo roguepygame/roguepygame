@@ -14,6 +14,7 @@ class Game:  # TODO Rename this to the game name later
     def __init__(self, start_scene: Type[root.Scene]):
         """
         Initialise the game
+
         :param start_scene: Scene used at the start
         """
         const.program = self
@@ -26,6 +27,7 @@ class Game:  # TODO Rename this to the game name later
     def run(self) -> None:
         """
         Game loop
+
         :return: None
         """
         while True:
@@ -40,6 +42,7 @@ class Game:  # TODO Rename this to the game name later
     def quit(self) -> None:
         """
         Method used to quit the game
+
         :return: None
         """
         raise SystemExit()
@@ -47,6 +50,7 @@ class Game:  # TODO Rename this to the game name later
     def get_object_manager(self) -> root.ObjectManager:
         """
         Returns the ObjectManager of the game
+
         :return: object manager
         """
         return self.manager.object_manager
@@ -54,6 +58,7 @@ class Game:  # TODO Rename this to the game name later
     def get_scene(self) -> root.Scene:
         """
         Returns the currently active Scene
+
         :return: active Scene
         """
         return self.manager.scene
@@ -61,6 +66,7 @@ class Game:  # TODO Rename this to the game name later
     def get_manager(self) -> root.SceneManager:
         """
         Returns the SceneManager of the game
+
         :return: scene manager
         """
         return self.manager
