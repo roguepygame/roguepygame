@@ -158,6 +158,7 @@ class ObjectManager:
         :return: None
         """
         self.objects.append(obj)
+        self.objects.sort(key=lambda x: x.layer if hasattr(x, 'layer') else 0)
 
     def remove_object(self, obj: "GameObject") -> None:
         """
@@ -249,10 +250,11 @@ class DrawableObject(GameObject):
     Requires image and rect attributes
     """
 
-    def __init__(self, image: pygame.Surface = None, rect: pygame.Rect = None):
+    def __init__(self, image: pygame.Surface = None, rect: pygame.Rect = None, layer: int = 1):
         super(DrawableObject, self).__init__()
         self.image = image
         self.rect = rect
+        self.layer = layer
 
     def render(self, screen: pygame.Surface) -> None:
         """
