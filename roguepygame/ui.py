@@ -26,7 +26,6 @@ class Text(root.DrawableObject):
     def create_surface(self) -> None:
         """
         Creates the Surface object for the text
-
         :return: None
         """
         self.image = self.font.render(self.text, True, self.color)
@@ -35,7 +34,6 @@ class Text(root.DrawableObject):
     def update_text(self, new_text: str) -> None:
         """
         Function that changes the text of the Text object
-
         :param new_text: New text
         :return: None
         """
@@ -48,10 +46,9 @@ class Button(root.ClickableObject):
     """
     Button class
     """
-    def __init__(self, text: str, position: tuple[int, int], do: Callable, width: int = 150, height: int = 60):
+    def __init__(self, text: str, position: tuple[int, int], do: Callable):
         super(Button, self).__init__()
-        self.image = pygame.Surface((width, height))
-        self.image.fill("YELLOW")
+        self.image = self.program.get_assets().get_image('BUTTON')
         self.rect = self.image.get_rect(**{'center': position})
         self.do: Callable = do
         self.add_child(Text(text, self.rect.center, 24, create_object=False))
@@ -60,7 +57,6 @@ class Button(root.ClickableObject):
     def click_function(self) -> None:
         """
         Function that gets called when the button is pressed
-
         :return: None
         """
         self.do()

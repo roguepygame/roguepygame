@@ -22,7 +22,11 @@ class MainMenu(root.Scene):
         screen.fill("LIGHTGRAY")  # Place for the background
         self.program.get_object_manager().object_render(screen)
 
-    def start_game_button_click(self):
+    def start_game_button_click(self) -> None:
+        """
+        Method that gets called when the player press the New game button
+        :return: None
+        """
         self.program.get_manager().go_to(GameScene)
 
 
