@@ -10,8 +10,11 @@ class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testi
         self.image.fill("GREEN")
         self.rect = self.image.get_rect()
         self.rect.topleft = (100, 100)
+        self.pos = pygame.Vector2(self.rect.topleft)
+        self.speed = 300  # pixels per second
 
     def update(self):
-        self.rect.x += 5
-        if self.rect.x > const.WIDTH:
+        self.pos.x += self.program.dt * self.speed
+        self.rect.x = round(self.pos.x)
+        if self.rect.left > const.WIDTH:
             self.destroy_object()
