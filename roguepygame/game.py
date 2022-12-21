@@ -34,6 +34,7 @@ class Game:  # TODO Rename this to the game name later
         """
         while True:
             scene = self.get_scene()
+            pygame.display.set_caption(f"{self.clock.get_fps():.2f}")
             scene.update_state()
             scene.events(pygame.event.get())
             scene.update()
@@ -54,6 +55,13 @@ class Game:  # TODO Rename this to the game name later
         :return: object manager
         """
         return self.manager.object_manager
+
+    def get_event_manager(self) -> root.EventManager:
+        """
+        Returns the EventManager of the game
+        :return: object manager
+        """
+        return self.manager.object_manager.event_manager
 
     def get_scene(self) -> root.Scene:
         """

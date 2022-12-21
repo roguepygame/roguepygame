@@ -1,8 +1,11 @@
-from typing import Optional, Type, Any, Callable
+from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol
 
 import pygame
 import constants as const
-import game
+if TYPE_CHECKING:
+    import game
+    class SupportsEvents(Protocol):
+        def events(self, event: pygame.event.Event) -> None: ...
 
 
 class Scene:
@@ -109,6 +112,7 @@ class ObjectManager:
     def __init__(self):
         self.program: game.Game = const.program
         self.objects: list[GameObject] = []
+        self.event_manager: EventManager = EventManager()
 
     def object_events(self, events: list[pygame.event.Event]) -> None:
         """
@@ -116,10 +120,7 @@ class ObjectManager:
         :param events: list of pygame events
         :return: None
         """
-        self.check_clickable(events)
-        for obj in self.objects:
-            if callable(getattr(obj, "events", None)):
-                obj.events(events)
+        self.event_manager.check_events(events)
 
     def object_update(self) -> None:
         """
@@ -155,6 +156,7 @@ class ObjectManager:
         :param obj: GameObject you want to remove
         :return: None
         """
+        self.event_manager.remove_object(obj)
         self.objects.remove(obj)
 
     def clear_objects(self) -> None:
@@ -162,24 +164,62 @@ class ObjectManager:
         Method used to remove all objects from the list of objects
         :return: None
         """
-        self.objects.clear()
+        copy_of_objects = self.objects[:]
+        for obj in copy_of_objects:
+            self.remove_object(obj)
 
-    def check_clickable(self, events: list[pygame.event.Event]) -> None:
+
+class EventManager:
+    """
+    Class used to transport pygame Events to GameObjects
+    """
+    def __init__(self):
+        self.listeners: dict[int, list[SupportsEvents]] = {}
+
+    def subscribe(self, event_type: int, obj: "SupportsEvents") -> None:
         """
-        Method that checks if you clicked on any clickable object
-        :param events: list of events
+        Method that adds object for which the event manager should check events
+        :param event_type: type of the event that should be checked for the object
+        :param obj: object to check events for
+        :return: None
+        """
+        if event_type in self.listeners:
+            self.listeners[event_type].append(obj)
+        else:
+            self.listeners[event_type] = [obj]
+
+    def unsubscribe(self, event_type: int, obj: "SupportsEvents") -> None:
+        """
+        Method that removes object for which the event manager should check events
+        :param event_type: type of the event that should be checked for the object
+        :param obj: object to remove event checking for
+        :return: None
+        """
+        if event_type in self.listeners:
+            if obj in self.listeners[event_type]:
+                self.listeners[event_type].remove(obj)
+            if not self.listeners[event_type]:
+                del self.listeners[event_type]
+
+    def remove_object(self, obj: "SupportsEvents") -> None:
+        """
+        Method that removes all event listeners for an object
+        :param obj: object you wish to remove from event manager
+        :return: None
+        """
+        for event_type in list(self.listeners):
+            self.unsubscribe(event_type, obj)
+
+    def check_events(self, events: list[pygame.event.Event]) -> None:
+        """
+        Method that checks if there have been any relevant event and notifies the objects
+        :param events: list of pygame Events
         :return: None
         """
         for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_position = self.program.get_scene().state['mouse_pos']
-                for obj in self.objects:
-                    if isinstance(obj, ClickableObject):
-                        if obj.rect.collidepoint(mouse_position):
-                            if event.button == 1:
-                                obj.click_function()
-                            if event.button == 3:
-                                obj.click_function_right()
+            if event.type in self.listeners:
+                for listener in self.listeners[event.type]:
+                    listener.events(event)
 
 
 class GameObject:
@@ -255,6 +295,21 @@ class ClickableObject(DrawableObject):
     """
     def __init__(self):
         super(ClickableObject, self).__init__()
+        self.program.get_event_manager().subscribe(pygame.MOUSEBUTTONDOWN, self)
+
+    def events(self, event: pygame.event.Event) -> None:
+        """
+        Method that checks whether the object was clicked
+        :param event: Relevant event
+        :return: None
+        """
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_position = self.program.get_scene().state['mouse_pos']
+            if self.rect.collidepoint(mouse_position):
+                if event.button == 1:
+                    self.click_function()
+                if event.button == 3:
+                    self.click_function_right()
 
     def click_function(self):
         """
