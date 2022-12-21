@@ -18,3 +18,5 @@ FOLDER = os.path.dirname(sys.modules['__main__'].__file__)
 IMAGE_FOLDER = os.path.join(FOLDER, 'Assets\\Images')
 
 BUTTON_IMAGE = 'Button.png'
+HOVERED_BUTTON_IMAGE = 'ButtonHovered.png'
+INACTIVE_BUTTON_IMAGE = 'ButtonInactive.png'

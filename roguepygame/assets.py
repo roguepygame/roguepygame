@@ -25,13 +25,16 @@ class Assets:
     """
     def __init__(self):
         self.images: dict[str, pygame.Surface] = {}
+        self.images_list: dict[str, list[pygame.Surface]] = {}
 
     def load(self) -> None:
         """
         Loads the images from the disk
         :return: None
         """
-        self.images["BUTTON"] = load_image(const.BUTTON_IMAGE)
+        self.images_list["BUTTON"] = [load_image(const.BUTTON_IMAGE),
+                                      load_image(const.HOVERED_BUTTON_IMAGE),
+                                      load_image(const.INACTIVE_BUTTON_IMAGE)]
 
     def get_image(self, name: str) -> pygame.Surface:
         """
@@ -40,3 +43,11 @@ class Assets:
         :return: image Surface
         """
         return self.images[name]
+
+    def get_images(self, name: str) -> list[pygame.Surface]:
+        """
+        Returns the list of images
+        :param name: name of the images
+        :return: list of image Surface
+        """
+        return self.images_list[name]
