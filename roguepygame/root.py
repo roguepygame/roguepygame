@@ -15,8 +15,9 @@ class Scene:
     """
     def __init__(self, **kwargs):
         self.program: game.Game = const.program
+        self.object_manager: ObjectManager = self.program.get_object_manager()
         self.state: dict[str, Any] = {
-            'mouse_pos': (-1000, -1000)
+            'mouse_pos': (-1000, -1000)  # TODO Reconsider if we need this information
         }
 
     def start(self) -> None:
@@ -37,7 +38,7 @@ class Scene:
         for event in events:
             if event.type == pygame.QUIT:
                 self.program.quit()
-        self.program.get_object_manager().object_events(events)
+        self.object_manager.object_events(events)
 
     def update(self) -> None:
         """
@@ -128,8 +129,7 @@ class ObjectManager:
         :return: None
         """
         for obj in self.objects:
-            if callable(getattr(obj, "update", None)):
-                obj.update()
+            obj.update()
 
     def object_render(self, screen: pygame.Surface) -> None:
         """
@@ -148,7 +148,7 @@ class ObjectManager:
         :return: None
         """
         self.objects.append(obj)
-        self.objects.sort(key=lambda x: x.layer if hasattr(x, 'layer') else 0)
+        self.objects.sort(key=layer_sort_key)
 
     def remove_object(self, obj: "GameObject") -> None:
         """
@@ -164,7 +164,7 @@ class ObjectManager:
         Method used to remove all objects from the list of objects
         :return: None
         """
-        copy_of_objects = self.objects[:]
+        copy_of_objects = self.objects.copy()
         for obj in copy_of_objects:
             self.remove_object(obj)
 
@@ -244,7 +244,7 @@ class GameObject:
                 child_name += 1
         self.child_objects[str(child_name)] = child_obj
 
-    def create_object(self, name: Optional[str] = None) -> "GameObject":
+    def add_object(self, name: Optional[str] = None) -> "GameObject":
         """
         Method that adds the object and its children to the ObjectManager
         :param name: name of the object
@@ -254,7 +254,7 @@ class GameObject:
             self.name = name
         self.program.get_object_manager().create_object(self)
         for child in self.child_objects.values():
-            child.create_object()
+            child.add_object()
         return self
 
     def destroy_object(self) -> None:
@@ -266,6 +266,13 @@ class GameObject:
             child.destroy_object()
         self.program.get_object_manager().remove_object(self)
 
+    def update(self) -> None:
+        """
+        Method used to update the object every frame.
+        :return: None
+        """
+        pass
+
 
 class DrawableObject(GameObject):
     """
@@ -274,7 +281,7 @@ class DrawableObject(GameObject):
     """
 
     def __init__(self, image: pygame.Surface = None, rect: pygame.Rect = None, layer: int = 1):
-        super(DrawableObject, self).__init__()
+        super().__init__()
         self.image = image
         self.rect = rect
         self.layer = layer
@@ -285,7 +292,8 @@ class DrawableObject(GameObject):
         :param screen: game window
         :return: None
         """
-        screen.blit(self.image, self.rect)
+        if self.image is not None and self.rect is not None:
+            screen.blit(self.image, self.rect)
 
 
 class ClickableObject(DrawableObject):
@@ -294,7 +302,7 @@ class ClickableObject(DrawableObject):
     Must implement click_function()
     """
     def __init__(self):
-        super(ClickableObject, self).__init__()
+        super().__init__()
         self.program.get_event_manager().subscribe(pygame.MOUSEBUTTONDOWN, self)
 
     def events(self, event: pygame.event.Event) -> None:
@@ -304,8 +312,7 @@ class ClickableObject(DrawableObject):
         :return: None
         """
         if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_position = self.program.get_scene().state['mouse_pos']
-            if self.rect.collidepoint(mouse_position):
+            if self.rect.collidepoint(event.pos):
                 if event.button == 1:
                     self.click_function()
                 if event.button == 3:
@@ -331,7 +338,7 @@ class Timer(GameObject):
     Class used for timer
     """
     def __init__(self, countdown: int, do: Callable, start: bool = True, loop: bool = True, first_check: bool = False):
-        super(Timer, self).__init__()
+        super().__init__()
         self.countdown: int = countdown
         self.current_time: int = 0
         self.last_update: int = -1
@@ -376,3 +383,13 @@ class Timer(GameObject):
         :return: percentage of timer completion
         """
         return (self.current_time - self.last_update) / self.countdown
+
+
+# Helper functions
+def layer_sort_key(x: GameObject) -> int:
+    """
+    Function used to return layer for sorting
+    :param x: GameObject
+    :return: GameObject layer
+    """
+    return x.layer if hasattr(x, 'layer') else 0

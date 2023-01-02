@@ -3,6 +3,12 @@ import pygame
 import constants as const
 
 
+# File names
+BUTTON_REGULAR_IMAGE = 'Button.png'
+BUTTON_HOVERED_IMAGE = 'ButtonHovered.png'
+BUTTON_INACTIVE_IMAGE = 'ButtonInactive.png'
+
+
 def load_image(image_name: str, transparent_color: pygame.Color=None, alpha: int=None) -> pygame.Surface:
     """
     Function used to load the image from the disk to the pygame.Surface
@@ -12,9 +18,9 @@ def load_image(image_name: str, transparent_color: pygame.Color=None, alpha: int
     :return: image Surface
     """
     image = pygame.image.load(os.path.join(const.IMAGE_FOLDER, image_name))
-    if transparent_color:
+    if transparent_color is not None:
         image.set_colorkey(transparent_color)
-    if alpha:
+    if alpha is not None:
         image.set_alpha(alpha)
     return image.convert_alpha()
 
@@ -24,17 +30,16 @@ class Assets:
     Class used to work with the images/sounds etc.
     """
     def __init__(self):
-        self.images: dict[str, pygame.Surface] = {}
-        self.images_list: dict[str, list[pygame.Surface]] = {}
+        self.images: dict[str, list[pygame.Surface]] = {}
 
     def load(self) -> None:
         """
         Loads the images from the disk
         :return: None
         """
-        self.images_list["BUTTON"] = [load_image(const.BUTTON_IMAGE),
-                                      load_image(const.HOVERED_BUTTON_IMAGE),
-                                      load_image(const.INACTIVE_BUTTON_IMAGE)]
+        self.images["BUTTON"] = [load_image(BUTTON_REGULAR_IMAGE),
+                                 load_image(BUTTON_HOVERED_IMAGE),
+                                 load_image(BUTTON_INACTIVE_IMAGE)]
 
     def get_image(self, name: str) -> pygame.Surface:
         """
@@ -42,7 +47,7 @@ class Assets:
         :param name: name of the image
         :return: image Surface
         """
-        return self.images[name]
+        return self.images[name][0]
 
     def get_images(self, name: str) -> list[pygame.Surface]:
         """
@@ -50,4 +55,4 @@ class Assets:
         :param name: name of the images
         :return: list of image Surface
         """
-        return self.images_list[name]
+        return self.images[name]

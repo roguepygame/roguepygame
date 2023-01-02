@@ -3,6 +3,7 @@ from typing import Callable, Literal
 import pygame
 import constants as const
 import root
+import enums
 
 
 class Text(root.DrawableObject):
@@ -12,7 +13,7 @@ class Text(root.DrawableObject):
     def __init__(self, text: str, position: tuple[int, int], size: int = 20,
                  color: pygame.Color = pygame.Color("BLACK"), allign: str = "center",
                  create_object=True):
-        super(Text, self).__init__()
+        super().__init__()
         self.text: str = text
         self.position: tuple[int, int] = position
         self.size: int = size
@@ -21,7 +22,7 @@ class Text(root.DrawableObject):
         self.font: pygame.font.Font = pygame.font.Font(const.FONT_NAME, size)
         self.create_surface()
         if create_object:
-            self.create_object()
+            self.add_object()
 
     def create_surface(self) -> None:
         """
@@ -43,21 +44,20 @@ class Text(root.DrawableObject):
 
 
 class Button(root.ClickableObject):
-    BUTTON_STATES = {'ACTIVE': 0, 'HOVERED': 1, 'INACTIVE': 2}
     """
     Button class
     """
     def __init__(self, text: str, position: tuple[int, int], do: Callable, active: bool=True):
-        super(Button, self).__init__()
+        super().__init__()
         self.state = 'ACTIVE' if active else 'INACTIVE'
         self.images = self.program.assets.get_images('BUTTON')
-        self.image = self.images[Button.BUTTON_STATES[self.state]]
+        self.image = self.images[enums.BUTTON_STATES[self.state]]
         self.rect = self.image.get_rect(**{'center': position})
         self.do: Callable = do
         if active:
             self.program.get_event_manager().subscribe(pygame.MOUSEMOTION, self)
         self.add_child(Text(text, self.rect.center, 24, create_object=False))
-        self.create_object()
+        self.add_object()
 
     def check_state(self) -> None:
         """
@@ -95,7 +95,7 @@ class Button(root.ClickableObject):
         :return: None
         """
         self.state = state
-        self.image = self.images[Button.BUTTON_STATES[self.state]]
+        self.image = self.images[enums.BUTTON_STATES[self.state]]
 
     def events(self, event: pygame.event.Event) -> None:
         super().events(event)

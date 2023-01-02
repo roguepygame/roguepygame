@@ -1,8 +1,9 @@
-from typing import Type
+from typing import Type, Optional
 
 import pygame
 import constants as const
 import root
+import scenes
 import assets
 
 
@@ -12,7 +13,7 @@ class Game:  # TODO Rename this to the game name later
     If you want to run the game you should create the Game object and call run() method.
     """
 
-    def __init__(self, start_scene: Type[root.Scene]):
+    def __init__(self, start_scene: Optional[Type[root.Scene]]=scenes.MainMenu):
         """
         Initialise the game
         :param start_scene: Scene used at the start
@@ -47,7 +48,7 @@ class Game:  # TODO Rename this to the game name later
         Method used to quit the game
         :return: None
         """
-        raise SystemExit()
+        raise SystemExit
 
     def get_object_manager(self) -> root.ObjectManager:
         """
