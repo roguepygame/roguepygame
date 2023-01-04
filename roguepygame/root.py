@@ -141,7 +141,7 @@ class ObjectManager:
             if isinstance(obj, DrawableObject):
                 obj.render(screen)
 
-    def create_object(self, obj: "GameObject") -> None:
+    def add_object(self, obj: "GameObject") -> None:
         """
         Method used to add new object to the list of objects
         :param obj: GameObject you want to add
@@ -240,7 +240,7 @@ class GameObject:
         """
         if child_name is None:
             child_name = len(self.child_objects)
-            while child_name in self.child_objects:
+            while str(child_name) in self.child_objects:
                 child_name += 1
         self.child_objects[str(child_name)] = child_obj
 
@@ -252,7 +252,7 @@ class GameObject:
         """
         if name is not None:
             self.name = name
-        self.program.get_object_manager().create_object(self)
+        self.program.get_object_manager().add_object(self)
         for child in self.child_objects.values():
             child.add_object()
         return self

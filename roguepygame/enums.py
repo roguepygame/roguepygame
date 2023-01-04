@@ -1,1 +1,7 @@
-BUTTON_STATES = {'ACTIVE': 0, 'HOVERED': 1, 'INACTIVE': 2}
+import enum
+
+
+class ButtonStates(enum.Enum):
+    ACTIVE = 0
+    HOVERED = 1
+    INACTIVE = 2
