@@ -1,6 +1,7 @@
 import os
 import pygame
 import constants as const
+import enums
 
 
 # File names
@@ -41,6 +42,10 @@ class Assets:
                                  load_image(BUTTON_HOVERED_IMAGE),
                                  load_image(BUTTON_INACTIVE_IMAGE)]
 
+        self.images[enums.PlayerAnimations.WALK] = [load_image(BUTTON_REGULAR_IMAGE),
+                                 load_image(BUTTON_HOVERED_IMAGE),
+                                 load_image(BUTTON_INACTIVE_IMAGE)]
+
     def get_image(self, name: str) -> pygame.Surface:
         """
         Returns the image
@@ -56,3 +61,31 @@ class Assets:
         :return: list of image Surface
         """
         return self.images[name]
+
+class Animation:
+    def __init__(self, name: str, time_per_frame=10):
+        self.name = name
+        self.images = const.program.assets.get_images(self.name)
+        self.image_index = 0
+        self.time_per_frame = time_per_frame
+
+    def animate(self):
+        self.image_index += 1
+        if self.image_index + 1 >= len(self.images) * self.time_per_frame:
+            self.image_index = 0
+        return self.images[self.image_index // self.time_per_frame]
+
+class AnimationManager:
+    def __init__(self, animations: dict[str, Animation]):
+        self.animations: dict[str, Animation] = animations
+        self.current_animation = ""
+
+    def set_current_animation(self, name: str):
+        self.current_animation = name
+
+    def get_current_image(self):
+        anim = self.animations[self.current_animation]
+        return anim.images[anim.image_index]
+        
+    def play_current_animation(self):
+        return self.animations[self.current_animation].animate()

@@ -3,6 +3,7 @@ import constants as const
 import root
 import ui
 import objects
+import enums
 
 
 class MainMenu(root.Scene):
@@ -37,20 +38,11 @@ class GameScene(root.Scene):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         ui.Text('Game', (const.WIDTH // 2, const.HEIGHT // 2), 48)
-        self.timer = root.Timer(1000, self.spawn_unit).add_object()
-        self.counter = ui.Text('', (const.WIDTH // 2, const.HEIGHT // 2 + 50), 48)
+        self.player = objects.Player(pygame.Vector2(100,100), [enums.PlayerAnimations.WALK, enums.PlayerAnimations.WALK]).add_object()
 
     def update(self):
-        self.counter.update_text(f'Objects on screen: {len(self.program.get_object_manager().objects)}')
         self.object_manager.object_update()
 
     def render(self, screen):
         screen.fill("LIGHTGRAY")  # Place for the background
         self.object_manager.object_render(screen)
-
-    def spawn_unit(self) -> None:
-        """
-        Method used to spawn game object
-        :return: None
-        """
-        objects.RandomObject().add_object()

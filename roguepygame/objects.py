@@ -1,6 +1,7 @@
 import pygame
 import constants as const
 import root
+import assets
 
 
 class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testing
@@ -18,3 +19,21 @@ class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testi
         self.rect.x = round(self.pos.x)
         if self.rect.left > const.WIDTH:
             self.destroy_object()
+
+class Entity(root.DrawableObject):
+    def __init__(self, pos: pygame.Vector2, animations: list[str]):
+        super().__init__()
+        self.animations = animations
+        self.animation_manager = assets.AnimationManager([{anim_name: assets.Animation(anim_name) for anim_name in self.animations}][0])
+        self.animation_manager.set_current_animation(self.animations[0])
+        self.image = self.animation_manager.get_current_image()
+        self.pos = pos
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (self.pos.x, self.pos.y)
+
+    def update(self):
+        self.image = self.animation_manager.play_current_animation()
+
+class Player(Entity):
+    def __init__(self, pos, animations):
+        super().__init__(pos, animations)
