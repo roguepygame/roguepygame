@@ -31,3 +31,19 @@ class Wall(root.DrawableObject):
         pygame.draw.rect(self.image, "DARKGRAY", self.rect, 1)
         self.rect.center = (x, y)
         self.object_manager.add_object(self, group_name="walls")
+
+
+class ControlObject(root.GameObject):  # TODO Testing object, can be removed in future
+    def __init__(self):
+        super().__init__()
+        self.program.get_event_manager().subscribe(pygame.KEYDOWN, self)
+        self.program.get_event_manager().subscribe(pygame.MOUSEBUTTONDOWN, self)
+        self.add_object()
+
+    def events(self, event: pygame.event.Event) -> None:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_p:
+                pygame.event.post(pygame.event.Event(const.PAUSE_EVENT))
+        else:
+            if self.program.get_scene().running:
+                print("MOUSE DOWN, but not if game paused")

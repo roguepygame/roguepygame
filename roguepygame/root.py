@@ -16,6 +16,7 @@ class Scene:
     def __init__(self, **kwargs):
         self.program: game.Game = const.program
         self.object_manager: ObjectManager = self.program.get_object_manager()
+        self.running = True
         self.state: dict[str, Any] = {
             'mouse_pos': (-1000, -1000)  # TODO Reconsider if we need this information
         }
@@ -38,6 +39,8 @@ class Scene:
         for event in events:
             if event.type == pygame.QUIT:
                 self.program.quit()
+            elif event.type == const.PAUSE_EVENT:
+                self.pause()
         self.object_manager.object_events(events)
 
     def update(self) -> None:
@@ -59,6 +62,9 @@ class Scene:
         :return: None
         """
         raise NotImplementedError(f"{self.__class__.__name__} Scene must implement render method!")
+
+    def pause(self):
+        self.running = not self.running
 
     def end(self) -> None:
         """
@@ -202,6 +208,7 @@ class EventManager:
     Class used to transport pygame Events to GameObjects
     """
     def __init__(self):
+        self.program: game.Game = const.program
         self.listeners: dict[int, list[SupportsEvents]] = {}
 
     def subscribe(self, event_type: int, obj: "SupportsEvents") -> None:
@@ -372,12 +379,21 @@ class Timer(GameObject):
         self.countdown: int = countdown
         self.current_time: int = 0
         self.last_update: int = -1
+        self.time_difference: int = 0
         self.running: bool = False
         self.do: Callable = do
         self.loop: bool = loop
         self.first_check: bool = first_check
         if start:
             self.start_timer()
+        self.program.get_event_manager().subscribe(const.PAUSE_EVENT, self)
+
+    def events(self, event: pygame.event.Event):
+        if self.running:
+            self.pause_timer()
+        else:
+            self.resume_timer()
+        self.running = not self.running
 
     def start_timer(self) -> None:
         """
@@ -394,6 +410,14 @@ class Timer(GameObject):
         :return: None
         """
         self.running = False
+
+    def pause_timer(self) -> None:
+        self.time_difference = self.current_time - self.last_update
+
+    def resume_timer(self) -> None:
+        self.current_time = pygame.time.get_ticks()
+        self.last_update = self.current_time - self.time_difference
+        self.time_difference = 0
 
     def update(self) -> None:
         """
