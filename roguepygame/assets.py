@@ -66,11 +66,9 @@ class Animation:
     def __init__(self, name: enums.Animations, time_per_frame=10):
         self.name = name
         self.image = const.program.assets.get_images(self.name)
+        self.images = [self.image.subsurface(pygame.Rect(x*const.IMAGE_WIDTH, 0, const.IMAGE_WIDTH, const.IMAGE_WIDTH)) for x in (range(self.image.get_width() // const.IMAGE_WIDTH))]
         self.image_index = 0
         self.time_per_frame = time_per_frame
-
-        self.source_image = const.program.assets.images[self.name]
-        self.images = [self.image.subsurface(pygame.Rect(x, 0, 32, 32)) for x in range(self.source_image.get_width() // 32)]
     
     def animate(self):
         self.image_index += 1
