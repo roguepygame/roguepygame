@@ -9,6 +9,8 @@ BUTTON_REGULAR_IMAGE = 'Button.png'
 BUTTON_HOVERED_IMAGE = 'ButtonHovered.png'
 BUTTON_INACTIVE_IMAGE = 'ButtonInactive.png'
 
+PLAYER_IDLE_IMAGES = 'player/idle/player_idle.png'
+
 
 def load_image(image_name: str, transparent_color: pygame.Color=None, alpha: int=None) -> pygame.Surface:
     """
@@ -42,9 +44,7 @@ class Assets:
                                  load_image(BUTTON_HOVERED_IMAGE),
                                  load_image(BUTTON_INACTIVE_IMAGE)]
 
-        self.images[enums.Animations.PLAYER_WALK] = [load_image(BUTTON_REGULAR_IMAGE),
-                                 load_image(BUTTON_HOVERED_IMAGE),
-                                 load_image(BUTTON_INACTIVE_IMAGE)]
+        self.images[enums.Animations.PLAYER_WALK] = load_image(PLAYER_IDLE_IMAGES)
 
     def get_image(self, name: str) -> pygame.Surface:
         """
@@ -65,10 +65,13 @@ class Assets:
 class Animation:
     def __init__(self, name: enums.Animations, time_per_frame=10):
         self.name = name
-        self.images = const.program.assets.get_images(self.name)
+        self.image = const.program.assets.get_images(self.name)
         self.image_index = 0
         self.time_per_frame = time_per_frame
 
+        self.source_image = const.program.assets.images[self.name]
+        self.images = [self.image.subsurface(pygame.Rect(x, 0, 32, 32)) for x in range(self.source_image.get_width() // 32)]
+    
     def animate(self):
         self.image_index += 1
         if self.image_index + 1 >= len(self.images) * self.time_per_frame:
