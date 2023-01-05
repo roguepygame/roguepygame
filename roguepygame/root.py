@@ -1,4 +1,5 @@
-from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol, Iterator
+import collections.abc
+from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol, Iterator, TypeVar
 
 import pygame
 import constants as const
@@ -6,6 +7,7 @@ if TYPE_CHECKING:
     import game
     class SupportsEvents(Protocol):
         def events(self, event: pygame.event.Event) -> None: ...
+game_object_type = TypeVar('game_object_type', bound='GameObject')
 
 
 class Scene:
@@ -193,6 +195,9 @@ class ObjectManager:
             raise ValueError(f"Group {group_name} doesn't exist")
         return self.groups[group_name]
 
+    def get_objects_of_type(self, object_type: Type[game_object_type]) -> Iterator[game_object_type]:
+        return GameObjectIterator(self, object_type)
+
     def clear_objects(self) -> None:
         """
         Method used to remove all objects from the list of objects
@@ -256,6 +261,9 @@ class EventManager:
                 for listener in self.listeners[event.type]:
                     listener.events(event)
 
+    def raise_event(self, event: int) -> None:
+        pygame.event.post(pygame.event.Event(event))
+        self.program.get_scene().events(pygame.event.get(event))
 
 class GameObject:
     """
@@ -480,7 +488,26 @@ class ObjectGroup:
         return colliding_objects
 
 
-# Helper functions
+# Helper stuff
+class GameObjectIterator(collections.abc.Iterator):
+    """
+    Creates iterator that goes over specific objects in ObjectManager
+    """
+    def __init__(self, object_manager: ObjectManager, object_type: Type[game_object_type]):
+        self.idx = 0
+        self.object_manager = object_manager
+        self.object_type = object_type
+        self.number_of_objects = len(self.object_manager.objects)
+
+    def __next__(self) -> game_object_type:
+        for i in range(self.idx, self.number_of_objects):
+            obj = self.object_manager.objects[i]
+            if isinstance(obj, self.object_type):
+                self.idx = i + 1
+                return obj
+        else:
+            raise StopIteration  # Done iterating.
+
 def layer_sort_key(x: GameObject) -> int:
     """
     Function used to return layer for sorting

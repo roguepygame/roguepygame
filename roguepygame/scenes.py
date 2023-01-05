@@ -37,7 +37,7 @@ class GameScene(root.Scene):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         objects.ControlObject()
-        self.pause_text = ui.Text("PAUSE", (const.WIDTH // 2, const.HEIGHT // 2), 48, pygame.Color("RED"), create_object=False)
+        self.pause_text = ui.Text("PAUSE", (const.WIDTH // 2, const.HEIGHT // 2), 48, create_object=False)
         self.timer = root.Timer(1000, self.spawn_unit).add_object()
         self.counter = ui.Text('', (const.WIDTH // 2, const.HEIGHT // 2 + 50), 48)
         for i in range(5):
@@ -57,8 +57,12 @@ class GameScene(root.Scene):
         if not self.running:
             self.pause_text.add_object()
             self.counter.update_text(f'Objects on screen: {len(self.program.get_object_manager().objects)}')
+            for text_object in self.object_manager.get_objects_of_type(ui.Text):
+                text_object.update_color(pygame.Color("RED"))
         else:
             self.object_manager.remove_object(self.pause_text)
+            for text_object in self.object_manager.get_objects_of_type(ui.Text):
+                text_object.update_color(pygame.Color("BLACK"))
 
     def spawn_unit(self) -> None:
         """

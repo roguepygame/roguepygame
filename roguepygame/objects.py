@@ -43,7 +43,7 @@ class ControlObject(root.GameObject):  # TODO Testing object, can be removed in 
     def events(self, event: pygame.event.Event) -> None:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_p:
-                pygame.event.post(pygame.event.Event(const.PAUSE_EVENT))
+                self.program.get_event_manager().raise_event(const.PAUSE_EVENT)
         else:
             if self.program.get_scene().running:
                 print("MOUSE DOWN, but not if game paused")
