@@ -6,7 +6,7 @@ class ButtonStates(enum.Enum):
     HOVERED = 1
     INACTIVE = 2
 
-class PlayerAnimations(enum.Enum):
-    WALK = 0
-    RUN = 1
-    IDLE = 3
+class Animations(enum.Enum):
+    PLAYER_WALK = 0
+    PLAYER_RUN = 1
+    PLAYER_IDLE = 3

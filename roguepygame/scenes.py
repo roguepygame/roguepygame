@@ -38,7 +38,7 @@ class GameScene(root.Scene):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         ui.Text('Game', (const.WIDTH // 2, const.HEIGHT // 2), 48)
-        self.player = objects.Player(pygame.Vector2(100,100), [enums.PlayerAnimations.WALK, enums.PlayerAnimations.WALK]).add_object()
+        self.player = objects.Player(pygame.Vector2(100,100), [enums.Animations.PLAYER_WALK, enums.Animations.PLAYER_WALK]).add_object()
 
     def update(self):
         self.object_manager.object_update()

@@ -2,6 +2,7 @@ import pygame
 import constants as const
 import root
 import assets
+import enums
 
 
 class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testing
@@ -21,7 +22,7 @@ class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testi
             self.destroy_object()
 
 class Entity(root.DrawableObject):
-    def __init__(self, pos: pygame.Vector2, animations: list[str]):
+    def __init__(self, pos: pygame.Vector2, animations: list[enums.Animations]):
         super().__init__()
         self.animations = animations
         self.animation_manager = assets.AnimationManager([{anim_name: assets.Animation(anim_name) for anim_name in self.animations}][0])

@@ -42,7 +42,7 @@ class Assets:
                                  load_image(BUTTON_HOVERED_IMAGE),
                                  load_image(BUTTON_INACTIVE_IMAGE)]
 
-        self.images[enums.PlayerAnimations.WALK] = [load_image(BUTTON_REGULAR_IMAGE),
+        self.images[enums.Animations.PLAYER_WALK] = [load_image(BUTTON_REGULAR_IMAGE),
                                  load_image(BUTTON_HOVERED_IMAGE),
                                  load_image(BUTTON_INACTIVE_IMAGE)]
 
@@ -63,7 +63,7 @@ class Assets:
         return self.images[name]
 
 class Animation:
-    def __init__(self, name: str, time_per_frame=10):
+    def __init__(self, name: enums.Animations, time_per_frame=10):
         self.name = name
         self.images = const.program.assets.get_images(self.name)
         self.image_index = 0
@@ -76,7 +76,7 @@ class Animation:
         return self.images[self.image_index // self.time_per_frame]
 
 class AnimationManager:
-    def __init__(self, animations: dict[str, Animation]):
+    def __init__(self, animations: dict[enums.Animations, Animation]):
         self.animations: dict[str, Animation] = animations
         self.current_animation = ""
 
