@@ -1,4 +1,4 @@
-from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol
+from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol, Iterator
 
 import pygame
 import constants as const
@@ -113,6 +113,7 @@ class ObjectManager:
     def __init__(self):
         self.program: game.Game = const.program
         self.objects: list[GameObject] = []
+        self.groups: dict[str, ObjectGroup] = {}
         self.event_manager: EventManager = EventManager()
 
     def object_events(self, events: list[pygame.event.Event]) -> None:
@@ -141,14 +142,17 @@ class ObjectManager:
             if isinstance(obj, DrawableObject):
                 obj.render(screen)
 
-    def add_object(self, obj: "GameObject") -> None:
+    def add_object(self, obj: "GameObject", group_name: Optional[str]=None) -> None:
         """
-        Method used to add new object to the list of objects
+        Method used to add new object to the object manager
         :param obj: GameObject you want to add
+        :param group_name: Name of the group you want the object to be in
         :return: None
         """
         self.objects.append(obj)
         self.objects.sort(key=layer_sort_key)
+        if group_name is not None:
+            self.add_object_to_group(obj, group_name)
 
     def remove_object(self, obj: "GameObject") -> None:
         """
@@ -158,6 +162,30 @@ class ObjectManager:
         """
         self.event_manager.remove_object(obj)
         self.objects.remove(obj)
+        for object_group in self.groups.values():
+            object_group.remove_object(obj)
+
+    def add_object_to_group(self, obj: "GameObject", group_name: str) -> None:
+        """
+        Method used to add the object to the group
+        :param obj: GameObject you want to add
+        :param group_name: Name of the group you want the object to be in
+        :return: None
+        """
+        if group_name not in self.groups:
+            self.groups[group_name] = ObjectGroup()
+        self.groups[group_name].add_object(obj)
+
+    def get_group(self, group_name: str) -> "ObjectGroup":
+        """
+        Method that returns object group
+        :param group_name: name of the group you want
+        :return: ObjectGroup
+        :raise ValueError: if group name doesn't exist
+        """
+        if group_name not in self.groups:
+            raise ValueError(f"Group {group_name} doesn't exist")
+        return self.groups[group_name]
 
     def clear_objects(self) -> None:
         """
@@ -228,6 +256,7 @@ class GameObject:
     """
     def __init__(self):
         self.program: game.Game = const.program
+        self.object_manager = self.program.get_object_manager()
         self.name: Optional[str] = None
         self.child_objects: dict[str, GameObject] = {}
 
@@ -244,15 +273,16 @@ class GameObject:
                 child_name += 1
         self.child_objects[str(child_name)] = child_obj
 
-    def add_object(self, name: Optional[str] = None) -> "GameObject":
+    def add_object(self, name: Optional[str] = None, group_name: Optional[str] = None) -> "GameObject":
         """
         Method that adds the object and its children to the ObjectManager
         :param name: name of the object
+        :param group_name: name of the group you want the object to be part of
         :return: self
         """
         if name is not None:
             self.name = name
-        self.program.get_object_manager().add_object(self)
+        self.object_manager.add_object(self, group_name)
         for child in self.child_objects.values():
             child.add_object()
         return self
@@ -264,7 +294,7 @@ class GameObject:
         """
         for child in self.child_objects.values():
             child.destroy_object()
-        self.program.get_object_manager().remove_object(self)
+        self.object_manager.remove_object(self)
 
     def update(self) -> None:
         """
@@ -383,6 +413,47 @@ class Timer(GameObject):
         :return: percentage of timer completion
         """
         return (self.current_time - self.last_update) / self.countdown
+
+
+class ObjectGroup:
+    """
+    Class used to represent the group of objects
+    """
+    def __init__(self):
+        self.objects: list[GameObject] = []
+
+    def __iter__(self) -> Iterator[GameObject]:
+        return self.objects.__iter__()
+
+    def add_object(self, obj: GameObject) -> None:
+        """
+        Method used to add an object to the group
+        :param obj: object to add
+        :return: None
+        """
+        self.objects.append(obj)
+
+    def remove_object(self, obj: GameObject) -> None:
+        """
+        Method used to remove the object from the group
+        :param obj: object to remove
+        :return: None
+        """
+        if obj in self.objects:
+            self.objects.remove(obj)
+
+    def group_collide(self, obj: DrawableObject) -> list[DrawableObject]:
+        """
+        Method used to return the list of object from the group that obj collides with
+        :param obj: object to check the collision for
+        :return: list of objects colliding with obj
+        """
+        colliding_objects = []
+        for group_object in self.objects:
+            if isinstance(group_object, DrawableObject):
+                if obj.rect.colliderect(group_object.rect):
+                    colliding_objects.append(group_object)
+        return colliding_objects
 
 
 # Helper functions
