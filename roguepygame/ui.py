@@ -42,6 +42,10 @@ class Text(root.DrawableObject):
             self.text = new_text
             self.create_surface()
 
+    def update_color(self, new_color: pygame.Color) -> None:
+        self.color = new_color
+        self.create_surface()
+
 
 class Button(root.ClickableObject):
     """
