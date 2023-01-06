@@ -21,20 +21,9 @@ class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testi
         if self.rect.left > const.WIDTH:
             self.destroy_object()
 
-class Entity(root.DrawableObject):
-    def __init__(self, pos: pygame.Vector2, animations: list[enums.Animations]):
-        super().__init__()
-        self.animations = animations
-        self.animation_manager = assets.AnimationManager([{anim_name: assets.Animation(anim_name) for anim_name in self.animations}][0])
-        self.animation_manager.set_current_animation(self.animations[0])
-        self.image = self.animation_manager.get_current_image()
+class Player(root.AnimatedObject):
+    def __init__(self, pos, animations):
+        super().__init__(animations)
         self.pos = pos
         self.rect = self.image.get_rect()
         self.rect.topleft = (self.pos.x, self.pos.y)
-
-    def update(self):
-        self.image = self.animation_manager.play_current_animation()
-
-class Player(Entity):
-    def __init__(self, pos, animations):
-        super().__init__(pos, animations)

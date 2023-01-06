@@ -1,4 +1,6 @@
 from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol
+import enums
+import assets
 
 import pygame
 import constants as const
@@ -384,6 +386,17 @@ class Timer(GameObject):
         """
         return (self.current_time - self.last_update) / self.countdown
 
+class AnimatedObject(DrawableObject):
+    def __init__(self, animations: list[enums.Animations]):
+        super().__init__()
+        print([{anim_name: assets.SingleAnimation(anim_name) for anim_name in animations}][0])
+        self.animation_manager = assets.Animation([{anim_name: assets.SingleAnimation(anim_name) for anim_name in animations}][0])
+        self.animation_manager.set_current_animation(animations[0])
+        self.image = self.animation_manager.get_current_image()
+
+    def render(self, screen):
+        self.image = self.animation_manager.play_current_animation()
+        super().render(screen)
 
 # Helper functions
 def layer_sort_key(x: GameObject) -> int:

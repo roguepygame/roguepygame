@@ -45,6 +45,7 @@ class Assets:
                                  load_image(BUTTON_INACTIVE_IMAGE)]
 
         self.images[enums.Animations.PLAYER_WALK] = load_image(PLAYER_IDLE_IMAGES)
+        self.images[enums.Animations.PLAYER_IDLE] = load_image(PLAYER_IDLE_IMAGES)
 
     def get_image(self, name: str) -> pygame.Surface:
         """
@@ -62,7 +63,7 @@ class Assets:
         """
         return self.images[name]
 
-class Animation:
+class SingleAnimation:
     def __init__(self, name: enums.Animations, time_per_frame=10):
         self.name = name
         self.image = const.program.assets.get_images(self.name)
@@ -76,9 +77,9 @@ class Animation:
             self.image_index = 0
         return self.images[self.image_index // self.time_per_frame]
 
-class AnimationManager:
-    def __init__(self, animations: dict[enums.Animations, Animation]):
-        self.animations: dict[str, Animation] = animations
+class Animation:
+    def __init__(self, animations: dict[enums.Animations, SingleAnimation]):
+        self.animations: dict[str, SingleAnimation] = animations
         self.current_animation = ""
 
     def set_current_animation(self, name: str):
