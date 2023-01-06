@@ -274,6 +274,7 @@ class GameObject:
         self.object_manager = self.program.get_object_manager()
         self.name: Optional[str] = None
         self.child_objects: dict[str, GameObject] = {}
+        self.parent: Optional[GameObject] = None
 
     def add_child(self, child_obj: "GameObject", child_name: Optional[str] = None) -> None:
         """
@@ -287,6 +288,7 @@ class GameObject:
             while str(child_name) in self.child_objects:
                 child_name += 1
         self.child_objects[str(child_name)] = child_obj
+        child_obj.parent = self
 
     def add_object(self, name: Optional[str] = None, group_name: Optional[str] = None) -> "GameObject":
         """
