@@ -1,6 +1,8 @@
 import pygame
 import constants as const
 import root
+import assets
+import enums
 
 
 class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testing
@@ -18,3 +20,10 @@ class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testi
         self.rect.x = round(self.pos.x)
         if self.rect.left > const.WIDTH:
             self.destroy_object()
+
+class Player(root.AnimatedObject):
+    def __init__(self, pos, animations):
+        super().__init__(animations)
+        self.pos = pos
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (self.pos.x, self.pos.y)
