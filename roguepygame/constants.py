@@ -18,4 +18,4 @@ FOLDER = os.path.dirname(sys.modules['__main__'].__file__)
 ASSETS_FOLDER = os.path.join(FOLDER, 'assets')
 IMAGE_FOLDER = os.path.join(ASSETS_FOLDER, 'images')
 
-PAUSE_EVENT: int = pygame.USEREVENT + 1
+PAUSE_EVENT: int = pygame.event.custom_type()

@@ -1,5 +1,5 @@
 import collections.abc
-from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol, Iterator, TypeVar
+from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol, Iterator, TypeVar, Generic
 
 import pygame
 import constants as const
@@ -7,7 +7,7 @@ if TYPE_CHECKING:
     import game
     class SupportsEvents(Protocol):
         def events(self, event: pygame.event.Event) -> None: ...
-game_object_type = TypeVar('game_object_type', bound='GameObject')
+_GAME_OBJECT_TYPE = TypeVar('_GAME_OBJECT_TYPE', bound='GameObject')
 
 
 class Scene:
@@ -195,7 +195,7 @@ class ObjectManager:
             raise ValueError(f"Group {group_name} doesn't exist")
         return self.groups[group_name]
 
-    def get_objects_of_type(self, object_type: Type[game_object_type]) -> Iterator[game_object_type]:
+    def get_objects_of_type(self, object_type: Type[_GAME_OBJECT_TYPE]) -> Iterator[_GAME_OBJECT_TYPE]:
         return GameObjectIterator(self, object_type)
 
     def clear_objects(self) -> None:
@@ -422,7 +422,7 @@ class Timer(GameObject):
         self.running = False
 
     def pause_timer(self) -> None:
-        self.time_difference = self.current_time - self.last_update
+        self.time_difference = pygame.time.get_ticks() - self.last_update
 
     def resume_timer(self) -> None:
         self.current_time = pygame.time.get_ticks()
@@ -491,17 +491,17 @@ class ObjectGroup:
 
 
 # Helper stuff
-class GameObjectIterator(collections.abc.Iterator):
+class GameObjectIterator(collections.abc.Iterator, Generic[_GAME_OBJECT_TYPE]):
     """
     Creates iterator that goes over specific objects in ObjectManager
     """
-    def __init__(self, object_manager: ObjectManager, object_type: Type[game_object_type]):
+    def __init__(self, object_manager: ObjectManager, object_type: Type[_GAME_OBJECT_TYPE]):
         self.idx = 0
         self.object_manager = object_manager
         self.object_type = object_type
         self.number_of_objects = len(self.object_manager.objects)
 
-    def __next__(self) -> game_object_type:
+    def __next__(self) -> _GAME_OBJECT_TYPE:
         for i in range(self.idx, self.number_of_objects):
             obj = self.object_manager.objects[i]
             if isinstance(obj, self.object_type):
@@ -514,6 +514,6 @@ def layer_sort_key(x: GameObject) -> int:
     """
     Function used to return layer for sorting
     :param x: GameObject
-    :return: GameObject layer
+    :return: layer of the GameObject
     """
     return x.layer if hasattr(x, 'layer') else 0
