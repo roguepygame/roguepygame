@@ -361,22 +361,33 @@ class ClickableObject(DrawableObject):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 if event.button == 1:
-                    self.click_function()
+                    self.click_function(event.pos)
                 if event.button == 3:
-                    self.click_function_right()
+                    self.click_function_right(event.pos)
+            else:
+                if event.button == 1:
+                    self.clicked_outside(event.pos)
+                if event.button == 3:
+                    self.click_function_right(event.pos)
 
-    def click_function(self):
+    def click_function(self, position: tuple[int, int]):
         """
         Function that gets called when the object is clicked with the left mouse button
         :return: None
         """
         raise NotImplementedError(f"{self.__class__.__name__} ClickableObject must implement click_function method!")
 
-    def click_function_right(self):
+    def click_function_right(self, position: tuple[int, int]):
         """
         Function that gets called when the object is clicked with the right mouse button
         :return: None
         """
+        pass
+
+    def clicked_outside(self, position: tuple[int, int]):
+        pass
+
+    def clicked_outside_right(self, position: tuple[int, int]):
         pass
 
 
@@ -420,6 +431,9 @@ class Timer(GameObject):
         :return: None
         """
         self.running = False
+
+    def restart_timer(self):
+        self.first_check = False
 
     def pause_timer(self) -> None:
         self.time_difference = pygame.time.get_ticks() - self.last_update

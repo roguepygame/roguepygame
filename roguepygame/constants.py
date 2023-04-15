@@ -13,7 +13,8 @@ HEIGHT: int = 600
 SCREEN_SIZE: tuple[int, int] = (WIDTH, HEIGHT)
 FPS: int = 60
 
-FONT_NAME: str = pygame.font.get_default_font()
+FONT_NAME: str = pygame.font.match_font('Consolas')
+# FONT_NAME: str = pygame.font.get_default_font()
 FOLDER = os.path.dirname(sys.modules['__main__'].__file__)
 ASSETS_FOLDER = os.path.join(FOLDER, 'assets')
 IMAGE_FOLDER = os.path.join(ASSETS_FOLDER, 'images')

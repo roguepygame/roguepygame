@@ -14,6 +14,7 @@ class MainMenu(root.Scene):
         super().__init__(**kwargs)
         ui.Button("New game", (const.WIDTH // 2, const.HEIGHT // 4),
                   self.start_game_button_click)
+        ui.TextBox((const.WIDTH // 2, const.HEIGHT // 2))
 
     def update(self) -> None:
         self.object_manager.object_update()
