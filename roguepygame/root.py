@@ -109,7 +109,6 @@ class SceneManager:
     def go_to_with_save(self, name: str, scene: Type[Scene], **kwargs) -> None:
         if self.next_scene is None:
             self.saved_scenes[name] = self.scene
-            self.object_manager.save_objects()
             self.next_scene = (scene, kwargs, ObjectManager())
 
     def load_scene(self, name: str) -> None:
@@ -120,7 +119,9 @@ class SceneManager:
     def end_frame(self) -> None:
         if self.next_scene is not None:
             if isinstance(self.next_scene[0], type):
-                self.object_manager = self.next_scene[2]
+                if self.object_manager != self.next_scene[2]:
+                    self.object_manager.save_objects()
+                    self.object_manager = self.next_scene[2]
                 self.scene = self.next_scene[0](self.object_manager, **self.next_scene[1])
                 self.scene.program = self.program
                 self.scene.start()
