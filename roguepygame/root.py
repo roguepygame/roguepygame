@@ -1,5 +1,5 @@
 import collections.abc
-from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol, Iterator, TypeVar, Generic
+from typing import Optional, Type, Any, Callable, TYPE_CHECKING, Protocol, Iterator, TypeVar, Generic, Union
 
 import pygame
 import constants as const
@@ -15,10 +15,9 @@ class Scene:
     Class used to represent the game scene
     it is responsible for processing the events, updating the game state, and rendering the game
     """
-    def __init__(self, **kwargs):
+    def __init__(self, object_manager, **kwargs):
         self.program: game.Game = const.program
-        self.object_manager: ObjectManager = self.program.get_object_manager()
-        self.running = True
+        self.object_manager: ObjectManager = object_manager
         self.state: dict[str, Any] = {
             'mouse_pos': (-1000, -1000)  # TODO Reconsider if we need this information
         }
@@ -41,8 +40,6 @@ class Scene:
         for event in events:
             if event.type == pygame.QUIT:
                 self.program.quit()
-            elif event.type == const.PAUSE_EVENT:
-                self.pause()
         self.object_manager.object_events(events)
 
     def update(self) -> None:
@@ -64,9 +61,6 @@ class Scene:
         :return: None
         """
         raise NotImplementedError(f"{self.__class__.__name__} Scene must implement render method!")
-
-    def pause(self):
-        self.running = not self.running
 
     def end(self) -> None:
         """
@@ -92,22 +86,49 @@ class SceneManager:
     """
     def __init__(self):
         self.program: game.Game = const.program
-        self.scene: Optional[Scene] = None
         self.object_manager: ObjectManager = ObjectManager()
+        self.scene: Optional[Scene] = None
+        self.next_scene: Optional[tuple[Union[Scene, Type[Scene]], dict[str, Any], ObjectManager]] = None
+        self.saved_scenes: dict[str, Scene] = {}
+
+    def start_program(self, scene: Type[Scene], **kwargs) -> None:
+        self.scene = scene(self.object_manager, **kwargs)
+        self.scene.program = self.program
+        self.scene.start()
 
     def go_to(self, scene: Type[Scene], **kwargs) -> None:
         """
-        Method you should call when you want to go to another scene
+        Method you should call when you want to go to another scene at the end of the frame
         :param scene: reference to the scene you want to go to
         :param kwargs: arguments you want to pass to the new scene
         :return: None
         """
-        if self.scene is not None:
-            self.scene.end()
-            self.object_manager.clear_objects()
-        self.scene = scene(**kwargs)
-        self.scene.program = self.program
-        self.scene.start()
+        if self.next_scene is None:
+            self.next_scene = (scene, kwargs, self.object_manager)
+
+    def go_to_with_save(self, name: str, scene: Type[Scene], **kwargs) -> None:
+        if self.next_scene is None:
+            self.saved_scenes[name] = self.scene
+            self.object_manager.save_objects()
+            self.next_scene = (scene, kwargs, ObjectManager())
+
+    def load_scene(self, name: str) -> None:
+        if self.next_scene is None:
+            scene = self.saved_scenes.pop(name)
+            self.next_scene = (scene, None, scene.object_manager)
+
+    def end_frame(self) -> None:
+        if self.next_scene is not None:
+            if isinstance(self.next_scene[0], type):
+                self.object_manager = self.next_scene[2]
+                self.scene = self.next_scene[0](self.object_manager, **self.next_scene[1])
+                self.scene.program = self.program
+                self.scene.start()
+            else:
+                self.object_manager = self.next_scene[2]
+                self.scene = self.next_scene[0]
+                self.object_manager.load_objects()
+            self.next_scene = None
 
 
 class ObjectManager:
@@ -206,6 +227,14 @@ class ObjectManager:
         copy_of_objects = self.objects.copy()
         for obj in copy_of_objects:
             self.remove_object(obj)
+
+    def save_objects(self) -> None:
+        for obj in self.objects:
+            obj.save_object()
+
+    def load_objects(self) -> None:
+        for obj in self.objects:
+            obj.load_object()
 
 
 class EventManager:
@@ -320,6 +349,12 @@ class GameObject:
         """
         pass
 
+    def save_object(self) -> None:
+        pass
+
+    def load_object(self) -> None:
+        pass
+
 
 class DrawableObject(GameObject):
     """
@@ -407,14 +442,6 @@ class Timer(GameObject):
         self.first_check: bool = first_check
         if start:
             self.start_timer()
-        self.program.get_event_manager().subscribe(const.PAUSE_EVENT, self)
-
-    def events(self, event: pygame.event.Event):
-        if self.running:
-            self.pause_timer()
-        else:
-            self.resume_timer()
-        self.running = not self.running
 
     def start_timer(self) -> None:
         """
@@ -435,13 +462,15 @@ class Timer(GameObject):
     def restart_timer(self):
         self.first_check = False
 
-    def pause_timer(self) -> None:
+    def save_object(self) -> None:
         self.time_difference = pygame.time.get_ticks() - self.last_update
+        self.running = not self.running
 
-    def resume_timer(self) -> None:
+    def load_object(self) -> None:
         self.current_time = pygame.time.get_ticks()
         self.last_update = self.current_time - self.time_difference
         self.time_difference = 0
+        self.running = not self.running
 
     def update(self) -> None:
         """

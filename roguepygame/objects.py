@@ -1,6 +1,6 @@
 import pygame
-import constants as const
 import root
+import scenes
 
 
 class RandomObject(root.DrawableObject):  # TODO: Remove, this is just for testing
@@ -41,9 +41,16 @@ class ControlObject(root.GameObject):  # TODO Testing object, can be removed in 
         self.add_object()
 
     def events(self, event: pygame.event.Event) -> None:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_p:
-                self.program.get_event_manager().raise_event(const.PAUSE_EVENT)
-        else:
-            if self.program.get_scene().running:
-                print("MOUSE DOWN, but not if game paused")
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.program.get_manager().go_to_with_save('GameScene', scenes.PauseScene)
+
+
+class ControlObjectPause(root.GameObject):
+    def __init__(self):
+        super().__init__()
+        self.program.get_event_manager().subscribe(pygame.MOUSEBUTTONDOWN, self)
+        self.add_object()
+
+    def events(self, event: pygame.event.Event) -> None:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            self.program.get_manager().load_scene('GameScene')
