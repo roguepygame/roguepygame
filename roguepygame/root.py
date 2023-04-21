@@ -18,6 +18,7 @@ class Scene:
     def __init__(self, object_manager, **kwargs):
         self.program: game.Game = const.program
         self.object_manager: ObjectManager = object_manager
+        self.background: pygame.Surface = pygame.Surface(const.SCREEN_SIZE)
         self.state: dict[str, Any] = {
             'mouse_pos': (-1000, -1000)  # TODO Reconsider if we need this information
         }
@@ -46,21 +47,20 @@ class Scene:
         """
         Method used to update the game.
         Gets called after Scene.events() every iteration of game loop.
-        Every Scene must implement it.
         :return: None
         """
-        raise NotImplementedError(f"{self.__class__.__name__} Scene must implement update method!")
+        self.object_manager.object_update()
 
     def render(self, screen: pygame.Surface) -> None:
         """
         Method used to render the game.
         Method gets the game window as the argument.
         Gets called after Scene.update() every iteration of game loop.
-        Every Scene must implement it.
         :param screen: Game window
         :return: None
         """
-        raise NotImplementedError(f"{self.__class__.__name__} Scene must implement render method!")
+        screen.blit(self.background, (0, 0))
+        self.object_manager.object_render(screen)
 
     def end(self) -> None:
         """
@@ -122,6 +122,9 @@ class SceneManager:
                 if self.object_manager != self.next_scene[2]:
                     self.object_manager.save_objects()
                     self.object_manager = self.next_scene[2]
+                else:
+                    self.object_manager.clear_objects()
+                    self.scene.end()
                 self.scene = self.next_scene[0](self.object_manager, **self.next_scene[1])
                 self.scene.program = self.program
                 self.scene.start()
@@ -291,8 +294,8 @@ class EventManager:
                 for listener in self.listeners[event.type]:
                     listener.events(event)
 
-    def raise_event(self, event: int) -> None:
-        pygame.event.post(pygame.event.Event(event))
+    def raise_event(self, event: int, **kwargs) -> None:
+        pygame.event.post(pygame.event.Event(event, **kwargs))
         self.program.get_scene().events(pygame.event.get(event))
 
 class GameObject:

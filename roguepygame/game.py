@@ -13,7 +13,7 @@ class Game:  # TODO Rename this to the game name later
     If you want to run the game you should create the Game object and call run() method.
     """
 
-    def __init__(self, start_scene: Optional[Type[root.Scene]]=scenes.GameScene):
+    def __init__(self, start_scene: Optional[Type[root.Scene]]=scenes.MainMenu):
         """
         Initialise the game
         :param start_scene: Scene used at the start
