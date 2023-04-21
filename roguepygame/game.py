@@ -26,7 +26,7 @@ class Game:  # TODO Rename this to the game name later
         self.assets.load()
         self.manager: root.SceneManager = root.SceneManager()
         self.dt: int = 0
-        self.manager.go_to(start_scene)
+        self.manager.start_program(start_scene)
 
     def run(self) -> None:
         """
@@ -35,12 +35,13 @@ class Game:  # TODO Rename this to the game name later
         """
         while True:
             scene = self.get_scene()
-            pygame.display.set_caption(f"{self.clock.get_fps():.2f}")
+            pygame.display.set_caption(f"{self.clock.get_fps():.2f} {len(self.manager.object_manager.objects)}")
             scene.update_state()
             scene.events(pygame.event.get())
             scene.update()
             scene.render(self.screen)
             pygame.display.flip()
+            self.manager.end_frame()
             self.dt = self.clock.tick(const.FPS) / 1000
 
     def quit(self) -> None:

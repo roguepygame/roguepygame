@@ -7,6 +7,7 @@ import constants as const
 BUTTON_REGULAR_IMAGE = 'Button.png'
 BUTTON_HOVERED_IMAGE = 'ButtonHovered.png'
 BUTTON_INACTIVE_IMAGE = 'ButtonInactive.png'
+TEXT_BOX_IMAGE = 'TextBox.png'
 
 
 def load_image(image_name: str, transparent_color: pygame.Color=None, alpha: int=None) -> pygame.Surface:
@@ -40,6 +41,7 @@ class Assets:
         self.images["BUTTON"] = [load_image(BUTTON_REGULAR_IMAGE),
                                  load_image(BUTTON_HOVERED_IMAGE),
                                  load_image(BUTTON_INACTIVE_IMAGE)]
+        self.images["TEXTBOX"] = [load_image(TEXT_BOX_IMAGE)]
 
     def get_image(self, name: str) -> pygame.Surface:
         """
